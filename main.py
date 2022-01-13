@@ -71,7 +71,7 @@ def controle_consensus():
     counter = 0
     #re.search("[ST?]-G-(LIVMFYW?)-(GN?)-(\.[2]-T-[LIVM?]-.-T-\.[2]-H", eiwit_lijst)
     #re.search("T-\.[2]-[GC]-[NQ]-S-G-S-\.-[LIVM]-[FY]", eiwit_lijst)
-    #Kijk n
+    #
 
 
 def main():
