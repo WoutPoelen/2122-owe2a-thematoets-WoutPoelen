@@ -1,67 +1,76 @@
-#Wout Poelen
+# Wout Poelen
 import re
 
 
 def open_bestand():
     """Deze functie opent het bestand"""
-    counter = 0
-    #voeg een exception handeling toe
-    Genbank_file = open("GCF_000013425.1_ASM1342v1_genomic.gbff", "r")
-    reading = str(Genbank_file.readlines())
 
-    for read in reading:
-        counter += 1
+    # voeg een exception handeling toe
+    genbank_file = open("GCF_000013425.1_ASM1342v1_genomic.gbff", "r")
+    lijn_list = []
+    lijnen_opslaan = False
 
-        if counter < 41:
-            pass
+    for lijn in genbank_file:
+        if re.search("CDS", lijn) is not None:
+        # zorgt ervoor dat hij alleen de volgende dingen doet als er CDS staat
+            lijn = lijn.strip()    # verwijdert de gaten aan het begin en einde
+            lijn_list.append(lijn)
+            lijnen_opslaan = True   # zorgt ervoor dat hij de lijnen opslaat
 
-    Genbank_split = reading.split("\t")
-    #print(Genbank_split)
+        elif lijnen_opslaan:
+            if re.search("gene", lijn) is None:
+            # zorgt dat hij alleen de volgende dingen doet als er gene staat
+                lijn = lijn.strip()
+                lijn_list.append(lijn)
 
-    return(Genbank_split)
+            else:
+                lijnen_opslaan = False
+                # zorgt ervoor dat de computer de rest niet opslaat
 
-
-def Translate_dictionary():
-    """"Deze functie maakt een dictionary aan om te kunnen transleren"""
-    # verander de hoge komma's in dubbele hoge komma's
-
-    translatie_dictionary = {
-        "ATA": "I", "ATC": "I", "ATT": "I", "ATG": "M",
-        "ACA": "T", "ACC": "T", "ACG": "T", "ACT": "T",
-        'AAC': 'N', 'AAT': 'N', 'AAA': 'K', 'AAG': 'K',
-        'AGC': 'S', 'AGT': 'S', 'AGA': 'R', 'AGG': 'R',
-        'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L',
-        'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P',
-        'CAC': 'H', 'CAT': 'H', 'CAA': 'Q', 'CAG': 'Q',
-        'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R',
-        'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V',
-        'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A',
-        'GAC': 'D', 'GAT': 'D', 'GAA': 'E', 'GAG': 'E',
-        'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G',
-        'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S',
-        'TTC': 'F', 'TTT': 'F', 'TTA': 'L', 'TTG': 'L',
-        'TAC': 'Y', 'TAT': 'Y', 'TAA': '_', 'TAG': '_',
-        'TGC': 'C', 'TGT': 'C', 'TGA': '_', 'TGG': 'W',
-    }
-
-    return(translatie_dictionary)
+    return lijn_list
 
 
-def eiwit_lijst(file):
+def eiwit_lijst(lijn_list):
     """Deze functie maakt een lijst aan met alleen eiwitten en geeft
     die door"""
 
-    eiwit_lijst = []
+    lijst_eiwit = []
+    data_dic = {}
+    lijnen_opslaan = False
 
-    letters = str(file)
+    for i in lijn_list:
+        if re.search(("/product="), i) is not None:
+            lijst_eiwit.append(i)
+        # Zorgt ervoor dat de lijnen na product toegevoegd worden aan de lijst
 
-    for i in letters:
-        if re.search(["/translation="], letters) == None:
-            eiwit_lijst.append()
-    print(eiwit_lijst)
+        elif re.search("/protein_id=", i) is not None:
+            lijst_eiwit.append(i)
+        # Hierdoor slaat hij de lijnen na protein_id op in de lijst
 
-    return eiwit_lijst
+        elif re.search("/translation=", i) is not None:
+            lijst_eiwit.append(i)
+            lijnen_opslaan = True
+        # Zorgt ervoor dat de computer de translatie eruit haalt en
+        # opslaat in de lijst
 
+        elif lijnen_opslaan:
+            lijst_eiwit.append(i)
+            if re.search("\"", i) is not None:
+                lijnen_opslaan = False
+                data_dic[lijst_eiwit[0]] = [lijst_eiwit[1],
+                                            lijst_eiwit[2]]
+
+                counter = 0
+                for i in lijst_eiwit:
+                    counter += 1
+                    if counter > 3:
+                        data_dic[lijst_eiwit[0]].append(i)
+                        if len(lijst_eiwit) == counter:
+                            lijst_eiwit = []
+
+    print(data_dic)
+
+    return data_dic
 
 
 def controle_consensus():
@@ -69,17 +78,20 @@ def controle_consensus():
     bij welke en bij hoeveel"""
 
     counter = 0
-    #re.search("[ST?]-G-(LIVMFYW?)-(GN?)-(\.[2]-T-[LIVM?]-.-T-\.[2]-H", eiwit_lijst)
-    #re.search("T-\.[2]-[GC]-[NQ]-S-G-S-\.-[LIVM]-[FY]", eiwit_lijst)
-    #k
+    # if re.search("[S|T?]G[L|I|V|M|F|Y|W?][G|N?](\.)[2]T[L|I|V|M?].T"
+                 # "(\.[2])H", eiwitlijst):
+
+    # re.search("T(\.[2])[G|C][N|Q]SGS(\.)[L|I|V|M][F|Y]", eiwitlijst)
 
 
 def main():
-    open_bestand()
 
-    file = open_bestand()
-    eiwit_lijst(file)
-    Translate_dictionary()
+    lijn_list = open_bestand()
+
+    eiwit_lijst(lijn_list)
+
+    data_dic = controle_consensus()
+
 
 
 main()
