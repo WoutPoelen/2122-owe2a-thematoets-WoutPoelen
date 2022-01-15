@@ -1,5 +1,6 @@
 # Wout Poelen
 import re
+import tkinter
 
 
 def open_bestand():
@@ -68,20 +69,67 @@ def eiwit_lijst(lijn_list):
                         if len(lijst_eiwit) == counter:
                             lijst_eiwit = []
 
-    print(data_dic)
-
     return data_dic
 
 
-def controle_consensus():
+def controle_consensus(data_dic):
     """"Deze functie kijkt of een van de consensus patronenen erin zit en
     bij welke en bij hoeveel"""
 
     counter = 0
-    # if re.search("[S|T?]G[L|I|V|M|F|Y|W?][G|N?](\.)[2]T[L|I|V|M?].T"
-                 # "(\.[2])H", eiwitlijst):
 
-    # re.search("T(\.[2])[G|C][N|Q]SGS(\.)[L|I|V|M][F|Y]", eiwitlijst)
+    data_string = str(data_dic)
+    for i in data_string:
+        if re.search("[ST]G[LIVMFYW{3}][GN].{2}T[LIVM?].T.{2}H",
+                     data_string) is not None:
+            counter += 1
+            print(data_dic[0][1][2])
+
+    for i in data_string:
+        if re.search("T.{2} [GC][NQ]SGS.[LIVM][FY]",
+                     data_string) is not None:
+
+            counter += 1
+            print(data_dic[0][1][2])
+
+    print(counter)
+
+
+class GUI:
+
+    def __init__(self):
+        self.main_window = tkinter.Tk()
+
+        self.top_frame = tkinter.Frame(self.main_window)
+        self.bottom_frame = tkinter.Frame(self.main_window)
+        self.top_frame.pack()
+        self.bottom_frame.pack()
+
+        self.label1 = tkinter.Label(self.top_frame,
+                                    text="Wat wil je weten?")
+        self.label1.pack()
+
+        self.button1 = tkinter.Button(self.bottom_frame,
+                                      text="consensus_aantal",
+                                      command=self.action1)
+
+        self.button2 = tkinter.Button(self.bottom_frame,
+                                      text="protein_id",
+                                      command=self.action2)
+
+        self.button3 = tkinter.Button(self.bottom_frame,
+                                      text="eiwit product",
+                                      command=self.action3)
+
+        self.button1.pack()
+        self.button2.pack()
+        self.button3.pack()
+
+        tkinter.mainloop()
+
+    def action1(self):
+        tkinter.messagebox.showinfo()
+
 
 
 def main():
@@ -90,7 +138,11 @@ def main():
 
     eiwit_lijst(lijn_list)
 
-    data_dic = controle_consensus()
+    data_dic = eiwit_lijst(lijn_list)
+
+    controle_consensus(data_dic)
+
+    gui = GUI()
 
 
 
