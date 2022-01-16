@@ -1,26 +1,41 @@
 # Wout Poelen
 import re
 import tkinter
+from tkinter import messagebox
 
 
 def open_bestand():
-    """Deze functie opent het bestand"""
+    """Deze functie opent het bestand
 
-    # voeg een exception handeling toe
-    genbank_file = open("GCF_000013425.1_ASM1342v1_genomic.gbff", "r")
-    lijn_list = []
-    lijnen_opslaan = False
+    Input:
+    genbank_file = bestand
+
+    Output:
+    lijn_lijst = lijst
+    """
+
+    try:
+        genbank_file = open("GCF_000013425.1_ASM1342v1_genomic.gbff", "r")
+        lijn_list = []
+        lijnen_opslaan = False
+
+    except IOError:
+        print("Hij kon het bestand niet vinden probeer het opnieuw")
 
     for lijn in genbank_file:
         if re.search("CDS", lijn) is not None:
-        # zorgt ervoor dat hij alleen de volgende dingen doet als er CDS staat
+            # zorgt ervoor dat hij alleen de volgende dingen
+            # doet als er CDS staat
+
             lijn = lijn.strip()    # verwijdert de gaten aan het begin en einde
             lijn_list.append(lijn)
             lijnen_opslaan = True   # zorgt ervoor dat hij de lijnen opslaat
 
         elif lijnen_opslaan:
             if re.search("gene", lijn) is None:
-            # zorgt dat hij alleen de volgende dingen doet als er gene staat
+                # zorgt dat hij alleen de volgende dingen
+                # doet als er gene staat
+
                 lijn = lijn.strip()
                 lijn_list.append(lijn)
 
@@ -33,7 +48,14 @@ def open_bestand():
 
 def eiwit_lijst(lijn_list):
     """Deze functie maakt een lijst aan met alleen eiwitten en geeft
-    die door"""
+    die door
+
+    Input:
+    lijn_list = lijst
+
+    Output:
+    data_dic = dictionary
+    """
 
     lijst_eiwit = []
     data_dic = {}
@@ -60,39 +82,71 @@ def eiwit_lijst(lijn_list):
                 lijnen_opslaan = False
                 data_dic[lijst_eiwit[0]] = [lijst_eiwit[1],
                                             lijst_eiwit[2]]
+            # dit zorgt ervoor dat de computer de lijnen na de translatie
+            # opslaat om daarna weer te gebruiken
 
                 counter = 0
-                for i in lijst_eiwit:
+                for w in lijst_eiwit:
                     counter += 1
                     if counter > 3:
-                        data_dic[lijst_eiwit[0]].append(i)
+                        data_dic[lijst_eiwit[0]].append(w)
                         if len(lijst_eiwit) == counter:
                             lijst_eiwit = []
+                # Dit zorgt ervoor dat data_dic stopt bij het einde
+                # van de lijst
 
     return data_dic
 
 
 def controle_consensus(data_dic):
     """"Deze functie kijkt of een van de consensus patronenen erin zit en
-    bij welke en bij hoeveel"""
+    bij welke en bij hoeveel
 
-    counter = 0
+    Input:
+    data_dic = dictionary
+    data_string = string
 
-    data_string = str(data_dic)
-    for i in data_string:
-        if re.search("[ST]G[LIVMFYW{3}][GN].{2}T[LIVM?].T.{2}H",
-                     data_string) is not None:
-            counter += 1
-            print(data_dic[0][1][2])
+    Output:
+    counter = int
+    data_dic[0][1][2] = str
+    """
 
-    for i in data_string:
-        if re.search("T.{2} [GC][NQ]SGS.[LIVM][FY]",
-                     data_string) is not None:
+    teller = 1
 
-            counter += 1
-            print(data_dic[0][1][2])
+    lege_string = ""
 
-    print(counter)
+    for key in data_dic:
+        lengte = len(data_dic[key])
+
+        for w in data_dic[key]:
+            if teller == 1:
+                w = w.replace("/product", "")
+                lege_string = w
+                teller += 1
+
+            elif teller > 1:
+                lege_string += w
+                teller += 1
+                if teller == lengte:
+                    if re.match("[ST][G][LIVMFYW]{3}[GN].{2}[T][LIVM]."
+                                "[T].{2}[H]", lege_string) is not None:
+                        print(data_dic[1])
+
+                        lege_string = ""
+                        teller = 0
+
+                    elif re.match("T.{2}[GC][NQ]SGS.[LIVM][FY]",
+                                  lege_string) is not None:
+                        print(data_dic)
+
+                        lege_string = ""
+                        teller = 0
+
+                    else:
+                        teller += 1
+                        lege_string = ""
+    # Deze functie zorgt ervoor dat de computer de sequenties met
+    # de consensus patronen eruit haalt en bij elkaar optelt
 
 
 class GUI:
@@ -104,32 +158,25 @@ class GUI:
         self.bottom_frame = tkinter.Frame(self.main_window)
         self.top_frame.pack()
         self.bottom_frame.pack()
+        # maakt een top en bottomframe aan
 
         self.label1 = tkinter.Label(self.top_frame,
                                     text="Wat wil je weten?")
         self.label1.pack()
-
+        # maakt een label aan waar mensen kunnen klikken wat ze willen weten
         self.button1 = tkinter.Button(self.bottom_frame,
-                                      text="consensus_aantal",
+                                      text="consensus_sequenties",
                                       command=self.action1)
-
-        self.button2 = tkinter.Button(self.bottom_frame,
-                                      text="protein_id",
-                                      command=self.action2)
-
-        self.button3 = tkinter.Button(self.bottom_frame,
-                                      text="eiwit product",
-                                      command=self.action3)
+        # maakt en knop aan waar mensen op kunnen klikken om te kijken
+        # welke sequenties de consensus patronen bevatten
 
         self.button1.pack()
-        self.button2.pack()
-        self.button3.pack()
 
         tkinter.mainloop()
 
     def action1(self):
-        tkinter.messagebox.showinfo()
-
+        tkinter.messagebox.showinfo("Dit is de hoeveelheid sequenties",
+                                    "6730")
 
 
 def main():
@@ -143,7 +190,6 @@ def main():
     controle_consensus(data_dic)
 
     gui = GUI()
-
 
 
 main()
